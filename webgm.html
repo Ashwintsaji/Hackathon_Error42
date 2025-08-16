@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChargeShare - EV Charging Investment Platform</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nanum Gothic', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #a853cf 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 10px 15px;
+            border-radius: 20px;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            background: white;
+            margin: 20px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .section {
+            padding: 30px;
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            text-align: center;
+            padding: 60px 30px;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #594bca;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .grid {
+            display: grid;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid #47d14c;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h3 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        .investment-tier {
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .investment-tier:hover,
+        .investment-tier.selected {
+            border-color: #4CAF50;
+            background: #f8fff8;
+            transform: translateY(-5px);
+        }
+
+        .investment-tier h3 {
+            color: #4CAF50;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .investment-tier .price {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .features-list {
+            list-style: none;
+            text-align: left;
+        }
+
+        .features-list li {
+            padding: 5px 0;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .features-list li::before {
+            content: "✓";
+            color: #4CAF50;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .map-container {
+            height: 100%;
+            width: 1000%;
+            background: #f0f0f0;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .charger-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .charger-item:hover {
+            border-color: #4CAF50;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2);
+        }
+
+        .charger-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-available {
+            background: #e8f5e8;
+            color: #4CAF50;
+        }
+
+        .status-busy {
+            background: #ffe8e8;
+            color: #5c36f4;
+        }
+
+        .status-maintenance {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .qr-scanner {
+            text-align: center;
+            padding: 20px;
+            background: #f8f8f8;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .charging-session {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .session-progress {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s ease;
+        }
+
+        .mobile-responsive {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .mobile-responsive {
+                display: block;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <div class="logo">
+                ⚡ ChargeShare
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" onclick="showSection('home')">Home</a></li>
+                <li><a href="#" onclick="showSection('find-chargers')">Find Chargers</a></li>
+                <li><a href="#" onclick="showSection('become-host')">Become Host</a></li>
+                <li><a href="#" onclick="showSection('dashboard')">Dashboard</a></li>
+                <li><a href="#" onclick="showSection('vehicle-reg')">Register Vehicle</a></li>
+            </ul>
+            <div class="mobile-responsive">
+                <button class="btn btn-primary" onclick="toggleMobileMenu()">☰ Menu</button>
+            </div>
+        </nav>
+    </header>
+
+    <div class="main-content">
+        <!-- Home Section -->
+        <section id="home" class="section active">
+            <div class="hero">
+                <h1>Transform Your Home Into An EV Charging Hub</h1>
+                <p>Join India's first residential EV charging investment platform. Earn passive income while building sustainable infrastructure.</p>
+                <div class="cta-buttons">
+                    <button class="btn btn-primary" onclick="showSection('investment-calculator')">Calculate ROI</button>
+                    <button class="btn btn-secondary" onclick="showSection('become-host')">Become a Host</button>
+                </div>
+            </div>
+
+            <div class="container" style="padding: 40px 20px;">
+                <h2 style="text-align: center; margin-bottom: 40px; color: #333;">How ChargeFranchise Works</h2>
+                <div class="grid grid-3">
+                    <div class="card animate-fade-in">
+                        <h3>🏠 Host Registration</h3>
+                        <p>Homeowners with 3-phase connection register their property. Our AI analyzes location viability and suggests optimal investment packages.</p>
+                    </div>
+                    <div class="card animate-fade-in">
+                        <h3>⚡ Infrastructure Setup</h3>
+                        <p>Choose from Basic (₹2L), Premium (₹5L), or Hub (₹10L+) packages. We handle installation, permits, and setup professionally.</p>
+                    </div>
+                    <div class="card animate-fade-in">
+                        <h3>💰 Earn Revenue</h3>
+                        <p>Start earning from day one. Hosts get 40-60% revenue share based on tier. Average monthly earnings: ₹25,000 - ₹65,000.</p>
+                    </div>
+                </div>
+
+                <h2 style="text-align: center; margin: 60px 0 40px; color: #333;">Investment Tiers</h2>
+                <div class="grid grid-3">
+                    <div class="investment-tier">
+                        <h3>Basic Host</h3>
+                        <div class="price">₹2-3L</div>
+                        <ul class="features-list">
+                            <li>1-2 charging ports</li>
+                            <li>7.4kW AC charging</li>
+                            <li>40% revenue share</li>
+                            <li>₹25,000/month avg</li>
+                            <li>11 month payback</li>
+                        </ul>
+                    </div>
+                    <div class="investment-tier">
+                        <h3>Premium Host</h3>
+                        <div class="price">₹5-7L</div>
+                        <ul class="features-list">
+                            <li>3-4 charging ports</li>
+                            <li>AC/DC charging mix</li>
+                            <li>50% revenue share</li>
+                            <li>₹45,000/month avg</li>
+                            <li>8 month payback</li>
+                        </ul>
+                    </div>
+                    <div class="investment-tier">
+                        <h3>Charging Hub</h3>
+                        <div class="price">₹10L+</div>
+                        <ul class="features-list">
+                            <li>6+ charging ports</li>
+                            <li>Fast DC charging</li>
+                            <li>60% revenue share</li>
+                            <li>₹65,000/month avg</li>
+                            <li>6 month payback</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Find Chargers Section -->
+        <section id="find-chargers" class="section">
+            <div class="container">
+                <h2 style="margin-bottom: 30px;">Find EV Chargers Near You</h2>
+                
+                <div class="grid grid-2">
+                    <div>
+                        <div class="form-group">
+                            <label>Enter Location</label>
+                            <input type="text" id="search-location" placeholder="Search by address, landmark, or area" onkeyup="searchChargers()">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Charger Type</label>
+                            <select id="charger-type" onchange="filterChargers()">
+                                <option value="all">All Types</option>
+                                <option value="ac">AC Charging (7.4kW)</option>
+                                <option value="dc">DC Fast Charging (25kW+)</option>
+                                <option value="rapid">Rapid Charging (50kW+)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Distance Range</label>
+                            <select id="distance-range" onchange="filterChargers()">
+                                <option value="2">Within 2 km</option>
+                                <option value="5">Within 5 km</option>
+                                <option value="10">Within 10 km</option>
+                                <option value="25">Within 25 km</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id = "map" class="map-container">
+                        <div>🗺️ Interactive Map View<br>
+                        <small>Showing nearby charging stations with real-time availability</small></div>
+                    </div>
+                </div>
+                <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+                <h3 style="margin: 30px 0 20px 0;">Available Charging Stations</h3>
+                <div id="chargers-list">
+                    <div class="charger-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4>Green Valley Charging Hub</h4>
+                                <p>📍 Sector 15, Gurgaon • 1.2 km away</p>
+                                <p>⚡ DC Fast Charging • 25kW • ₹8/kWh</p>
+                                <p>🏠 Host: Sharma Residence • ⭐ 4.8 rating</p>
+                            </div>
+                            <div>
+                                <span class="charger-status status-available">Available</span>
+                                <button class="btn btn-primary" onclick="bookCharger('green-valley')">Book Now</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="charger-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4>Tech Park Charging Station</h4>
+                                <p>📍 Cyber City, Gurgaon • 2.1 km away</p>
+                                <p>⚡ AC Charging • 7.4kW • ₹6/kWh</p>
+                                <p>🏠 Host: Priya's Place • ⭐ 4.6 rating</p>
+                            </div>
+                            <div>
+                                <span class="charger-status status-busy">In Use (45 min left)</span>
+                                <button class="btn btn-secondary">Join Queue</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="charger-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4>Residential Fast Charger</h4>
+                                <p>📍 DLF Phase 2, Gurgaon • 3.5 km away</p>
+                                <p>⚡ DC Rapid Charging • 50kW • ₹12/kWh</p>
+                                <p>🏠 Host: Kumar Family • ⭐ 4.9 rating</p>
+                            </div>
+                            <div>
+                                <span class="charger-status status-available">Available</span>
+                                <button class="btn btn-primary" onclick="bookCharger('kumar-rapid')">Book Now</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Become Host Section -->
+        <section id="become-host" class="section">
+            <div class="container">
+                <h2 style="text-align: center; margin-bottom: 40px;">Become a Charging Station Host</h2>
+                
+                <div class="grid grid-2">
+                    <div>
+                        <h3>Property Assessment</h3>
+                        <form id="host-registration">
+                            <div class="form-group">
+                                <label>Property Address</label>
+                                <textarea placeholder="Enter complete address with landmarks" rows="3"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Available Space</label>
+                                <select>
+                                    <option>2 parking spaces</option>
+                                    <option>3-4 parking spaces</option>
+                                    <option>5-6 parking spaces</option>
+                                    <option>More than 6 spaces</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Electrical Connection</label>
+                                <select>
+                                    <option>3-phase connection available</option>
+                                    <option>Single-phase (need upgrade)</option>
+                                    <option>Not sure</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Property Type</label>
+                                <select>
+                                    <option>Independent House</option>
+                                    <option>Villa/Bungalow</option>
+                                    <option>Corner Plot</option>
+                                    <option>Commercial Space</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Investment Capacity</label>
+                                <select id="investment-budget">
+                                    <option value="basic">₹2-3 Lakhs (Basic)</option>
+                                    <option value="premium">₹5-7 Lakhs (Premium)</option>
+                                    <option value="hub">₹10+ Lakhs (Charging Hub)</option>
+                                </select>
+                            </div>
+
+                            <button type="button" class="btn btn-primary" onclick="calculateViability()">
+                                <span class="loading" id="calc-loading" style="display: none;"></span>
+                                Calculate Location Viability
+                            </button>
+                        </form>
+                    </div>
+
+                    <div>
+                        <div class="card">
+                            <h3>🎯 Location Viability Score</h3>
+                            <div id="viability-result" style="display: none;">
+                                <div style="text-align: center; margin: 20px 0;">
+                                    <canvas id="viability-chart" width="200" height="200"></canvas>
+                                </div>
+                                <div id="viability-details"></div>
+                            </div>
+                            <p id="viability-placeholder">Complete the form to get your location's investment potential score based on traffic patterns, EV adoption, and competition analysis.</p>
+                        </div>
+
+                        <div class="card" style="margin-top: 20px;">
+                            <h3>📊 Expected Returns</h3>
+                            <div id="returns-calculation">
+                                <p><strong>Initial Investment:</strong> <span id="investment-amount">₹2-3 Lakhs</span></p>
+                                <p><strong>Monthly Revenue:</strong> <span id="monthly-revenue">₹25,000</span></p>
+                                <p><strong>Your Share (40%):</strong> <span id="host-share">₹10,000</span></p>
+                                <p><strong>Payback Period:</strong> <span id="payback-period">11 months</span></p>
+                                <p><strong>Annual ROI:</strong> <span id="annual-roi">145%</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px;">
+                    <h3>Why Choose ChargeFranchise?</h3>
+                    <div class="grid grid-2" style="margin-top: 20px;">
+                        <div class="card">
+                            <h4>🔧 Complete Setup</h4>
+                            <p>We handle everything from permits to installation. Professional-grade equipment with 24/7 support.</p>
+                        </div>
+                        <div class="card">
+                            <h4>🤖 AI Optimization</h4>
+                            <p>Smart pricing algorithms and demand prediction to maximize your earnings automatically.</p>
+                        </div>
+                        <div class="card">
+                            <h4>💸 Guaranteed Returns</h4>
+                            <p>Industry-leading revenue sharing model with transparent accounting and monthly payouts.</p>
+                        </div>
+                        <div class="card">
+                            <h4>🛡️ Full Insurance</h4>
+                            <p>Complete liability coverage and equipment insurance. Your investment is fully protected.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Investment Calculator Section -->
+        <section id="investment-calculator" class="section">
+            <div class="container">
+                <h2 style="text-align: center; margin-bottom: 40px;">Investment ROI Calculator</h2>
+                
+                <div class="grid grid-2">
+                    <div>
+                        <h3>Investment Parameters</h3>
+                        <div class="form-group">
+                            <label>Investment Amount</label>
+                            <select id="calc-investment" onchange="updateCalculation()">
+                                <option value="250000">₹2.5 Lakhs (Basic)</option>
+                                <option value="600000">₹6 Lakhs (Premium)</option>
+                                <option value="1200000">₹12 Lakhs (Hub)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Location Type</label>
+                            <select id="calc-location" onchange="updateCalculation()">
+                                <option value="residential">Residential Area</option>
+                                <option value="commercial">Near Commercial Hub</option>
+                                <option value="highway">Highway Access</option>
+                                <option value="mixed">Mixed Development</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Daily Sessions (Expected)</label>
+                            <input type="range" id="daily-sessions" min="10" max="50" value="25" oninput="updateCalculation()">
+                            <span id="sessions-display">25 sessions/day</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Average Revenue per Session</label>
+                            <input type="range" id="revenue-per-session" min="100" max="300" value="150" oninput="updateCalculation()">
+                            <span id="revenue-display">₹150/session</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Revenue Share Percentage</label>
+                            <select id="revenue-share" onchange="updateCalculation()">
+                                <option value="40">40% (Basic)</option>
+                                <option value="50">50% (Premium)</option>
+                                <option value="60">60% (Hub)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="card">
+                            <h3>📈 ROI Projection</h3>
+                            <canvas id="roi-chart" width="400" height="200"></canvas>
+                        </div>
+
+                        <div class="card" style="margin-top: 20px;">
+                            <h3>💰 Financial Summary</h3>
+                            <div class="dashboard-stats" style="grid-template-columns: 1fr 1fr;">
+                                <div class="stat-card">
+                                    <div class="stat-number" id="monthly-earning">₹56,250</div>
+                                    <div>Monthly Income</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number" id="payback-months">4.9</div>
+                                    <div>Payback (Months)</div>
+                                </div>
+                            </div>
+                            <p><strong>Annual ROI:</strong> <span id="calc-annual-roi" style="color: #4CAF50; font-size: 1.2rem;">243%</span></p>
+                            <p><strong>5-Year Profit:</strong> <span id="five-year-profit" style="color: #4CAF50; font-size: 1.2rem;">₹31.5 Lakhs</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px; text-align: center;">
+                    <button class="btn btn-primary" onclick="showSection('become-host')">Start Your Investment Journey</button>
+                    <button class="btn btn-secondary" onclick="downloadBusinessPlan()">Download Business Plan</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vehicle Registration Section -->
+        <section id="vehicle-reg" class="section">
+            <div class="container">
+                <h2 style="text-align: center; margin-bottom: 40px;">Register Your Electric Vehicle</h2>
+                
+                <div class="grid grid-2">
+                    <div>
+                        <h3>Vehicle Details</h3>
+                        <form id="vehicle-form">
+                            <div class="form-group">
+                                <label>Vehicle Registration Number</label>
+                                <input type="text" id="vehicle-number" placeholder="e.g., DL01AB1234" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Vehicle Brand</label>
+                                <select id="vehicle-brand" onchange="updateModels()" required>
+                                    <option value="">Select Brand</option>
+                                    <option value="tata">Tata Motors</option>
+                                    <option value="mg">MG Motor</option>
+                                    <option value="hyundai">Hyundai</option>
+                                    <option value="mahindra">Mahindra</option>
+                                    <option value="kia">Kia</option>
+                                    <option value="bmw">BMW</option>
+                                    <option value="audi">Audi</option>
+                                    <option value="tesla">Tesla</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Vehicle Model</label>
+                                <select id="vehicle-model" onchange="updateBatteryInfo()" required>
+                                    <option value="">Select Model</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Battery Capacity</label>
+                                <input type="text" id="battery-capacity" readonly placeholder="Auto-detected from model">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Charging Port Type</label>
+                                <input type="text" id="port-type" readonly placeholder="Auto-detected from model">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Average Daily Distance (km)</label>
+                                <input type="number" id="daily-distance" placeholder="e.g., 50" required>
+                            </div>
+
+                            <button type="button" class="btn btn-primary" onclick="registerVehicle()">Register Vehicle</button>
+                        </form>
+                    </div>
+
+                    <div>
+                        <div class="card">
+                            <h3>🔋 Charging Profile</h3>
+                            <div id="charging-profile" style="display: none;">
+                                <canvas id="charging-chart" width="300" height="200"></canvas>
+                                <div id="charging-details" style="margin-top: 20px;"></div>
+                            </div>
+                            <p id="profile-placeholder">Register your vehicle to see personalized charging recommendations and time estimates.</p>
+                        </div>
+
+                        <div class="card" style="margin-top: 20px;">
+                            <h3>📱 Quick Access</h3>
+                            <div class="qr-scanner">
+                                <div id="vehicle-qr"></div>
+                                <p>Your Vehicle QR Code</p>
+                                <small>Scan this at charging stations for instant access</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section">
+            <div class="container">
+                <h2 style="margin-bottom: 30px;">Host Dashboard</h2>
+                
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">₹45,250</div>
+                        <div>This Month's Revenue</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">127</div>
+                        <div>Total Bookings</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">4.8</div>
+                        <div>Average Rating</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">85%</div>
+                        <div>Utilization Rate</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div>
+                        <div class="card">
+                            <h3>📊 Revenue Analytics</h3>
+                            <canvas id="revenue-chart" width="400" height="300"></canvas>
+                        </div>
+                        
+                        <div class="card" style="margin-top: 20px;">
+                            <h3>⚡ Station Performance</h3>
+                            <div class="charger-item">
+                                <h4>Port 1 - AC Charger (7.4kW)</h4>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 78%;"></div>
+                                </div>
+                                <p>78% uptime • 156 sessions • ₹18,500 revenue</p>
+                                <span class="charger-status status-available">Available</span>
+                            </div>
+                            
+                            <div class="charger-item">
+                                <h4>Port 2 - DC Fast Charger (25kW)</h4>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 92%;"></div>
+                                </div>
+                                <p>92% uptime • 89 sessions • ₹26,750 revenue</p>
+                                <span class="charger-status status-busy">In Use</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="card">
+                            <h3>📅 Booking Management</h3>
+                            <div style="max-height: 300px; overflow-y: auto;">
+                                <div class="charger-item">
+                                    <h4>Today's Bookings</h4>
+                                    <p>🕐 10:00 AM - Priya K. (Tata Nexon EV)</p>
+                                    <p>🕑 02:30 PM - Amit S. (MG ZS EV)</p>
+                                    <p>🕕 06:00 PM - Sarah M. (Hyundai Kona)</p>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary" style="width: 100%; margin-top: 15px;">View All Bookings</button>
+                        </div>
+
+                        <div class="card" style="margin-top: 20px;">
+                            <h3>🔧 Maintenance Alerts</h3>
+                            <div class="charger-item">
+                                <p>⚠️ Port 1: Scheduled maintenance due in 5 days</p>
+                                <p>✅ Port 2: Last serviced 15 days ago</p>
+                                <p>🔍 System health check: All systems normal</p>
+                            </div>
+                            <button class="btn btn-secondary" onclick="scheduleMaintenance()">Schedule Maintenance</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <h3>🎯 AI Recommendations</h3>
+                    <div class="grid grid-3">
+                        <div class="card">
+                            <h4>💰 Pricing Optimization</h4>
+                            <p>Increase weekend rates by 15% to earn ₹3,200 more monthly based on demand patterns.</p>
+                            <button class="btn btn-primary">Apply Suggestion</button>
+                        </div>
+                        <div class="card">
+                            <h4>📈 Utilization Boost</h4>
+                            <p>Add amenities like WiFi and waiting area to increase average session duration by 25%.</p>
+                            <button class="btn btn-primary">Learn More</button>
+                        </div>
+                        <div class="card">
+                            <h4>🚀 Expansion Opportunity</h4>
+                            <p>Your location is ideal for a third charging port. Expected additional monthly revenue: ₹18,000.</p>
+                            <button class="btn btn-primary">Get Quote</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Booking Modal -->
+    <div id="booking-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('booking-modal')">&times;</span>
+            <h3>Book Charging Session</h3>
+            <div class="form-group">
+                <label>Select Date & Time</label>
+                <input type="datetime-local" id="booking-datetime">
+            </div>
+            <div class="form-group">
+                <label>Estimated Charging Duration</label>
+                <select id="charging-duration">
+                    <option value="1">1 hour (0-80% charge)</option>
+                    <option value="2">2 hours (full charge)</option>
+                    <option value="0.5">30 minutes (quick top-up)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Vehicle</label>
+                <select id="booking-vehicle">
+                    <option value="">Select registered vehicle</option>
+                    <option value="dl01ab1234">DL01AB1234 - Tata Nexon EV</option>
+                </select>
+            </div>
+            <div class="card">
+                <h4>💰 Booking Summary</h4>
+                <p><strong>Charging Cost:</strong> <span id="estimated-cost">₹120</span></p>
+                <p><strong>Duration:</strong> <span id="estimated-duration">1 hour</span></p>
+                <p><strong>Energy:</strong> <span id="estimated-energy">15 kWh</span></p>
+            </div>
+            <button class="btn btn-primary" onclick="confirmBooking()" style="width: 100%;">Confirm Booking</button>
+        </div>
+    </div>
+
+    <!-- Charging Session Modal -->
+    <div id="charging-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="text-align: center;">⚡ Active Charging Session</h3>
+            <div class="charging-session">
+                <h4>Green Valley Charging Hub</h4>
+                <p>📍 Sector 15, Gurgaon</p>
+                <div class="session-progress">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Battery Level</span>
+                        <span id="battery-level">65%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="charging-progress" style="width: 65%;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                        <span>Time Remaining: <span id="time-remaining">25 min</span></span>
+                        <span>Cost: ₹<span id="current-cost">78</span></span>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <p><strong>Charging Speed:</strong> 7.4 kW</p>
+                    <p><strong>Energy Delivered:</strong> <span id="energy-delivered">12.5 kWh</span></p>
+                    <p><strong>Session Started:</strong> 2:30 PM</p>
+                </div>
+                <button class="btn btn-primary" onclick="stopCharging()" style="width: 100%; margin-top: 20px;">Stop Charging</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentSection = 'home';
+        let chargingInterval;
+        let batteryLevel = 45;
+
+        // Vehicle database
+        const vehicleDatabase = {
+            tata: {
+                'Nexon EV': { battery: '30.2 kWh', port: 'Type 2 AC', range: '312 km' },
+                'Tigor EV': { battery: '26 kWh', port: 'Type 2 AC', range: '306 km' },
+                'Tiago EV': { battery: '24 kWh', port: 'Type 2 AC', range: '315 km' }
+            },
+            mg: {
+                'ZS EV': { battery: '44.5 kWh', port: 'Type 2 AC + CCS', range: '419 km' },
+                'Comet EV': { battery: '17.3 kWh', port: 'Type 2 AC', range: '230 km' }
+            },
+            hyundai: {
+                'Kona Electric': { battery: '39.2 kWh', port: 'Type 2 AC + CCS', range: '452 km' },
+                'Ioniq 5': { battery: '72.6 kWh', port: 'CCS + Type 2', range: '631 km' }
+            },
+            mahindra: {
+                'XUV400': { battery: '34.5 kWh', port: 'Type 2 AC + CCS', range: '456 km' },
+                'eVerito': { battery: '21.2 kWh', port: 'Type 2 AC', range: '181 km' }
+            }
+        };
+
+        // Navigation function
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+            currentSection = sectionId;
+            
+            // Initialize section-specific features
+            if (sectionId === 'dashboard') {
+                initializeDashboard();
+            } else if (sectionId === 'investment-calculator') {
+                initializeCalculator();
+            }
+        }
+
+        // Vehicle registration functions
+        function updateModels() {
+            const brand = document.getElementById('vehicle-brand').value;
+            const modelSelect = document.getElementById('vehicle-model');
+            
+            modelSelect.innerHTML = '<option value="">Select Model</option>';
+            
+            if (brand && vehicleDatabase[brand]) {
+                Object.keys(vehicleDatabase[brand]).forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model;
+                    option.textContent = model;
+                    modelSelect.appendChild(option);
+                });
+            }
+        }
+
+        function updateBatteryInfo() {
+            const brand = document.getElementById('vehicle-brand').value;
+            const model = document.getElementById('vehicle-model').value;
+            
+            if (brand && model && vehicleDatabase[brand][model]) {
+                const vehicleData = vehicleDatabase[brand][model];
+                document.getElementById('battery-capacity').value = vehicleData.battery;
+                document.getElementById('port-type').value = vehicleData.port;
+            }
+        }
+
+        function registerVehicle() {
+            const vehicleNumber = document.getElementById('vehicle-number').value;
+            const brand = document.getElementById('vehicle-brand').value;
+            const model = document.getElementById('vehicle-model').value;
+            const dailyDistance = document.getElementById('daily-distance').value;
+
+            if (!vehicleNumber || !brand || !model || !dailyDistance) {
+                alert('Please fill all required fields');
+                return;
+            }
+
+            // Generate QR code
+            document.getElementById('vehicle-qr').innerHTML = '';
+            new QRCode(document.getElementById('vehicle-qr'), {
+                text: `VEHICLE:${vehicleNumber}:${brand}:${model}`,
+                width: 128,
+                height: 128
+            });
+
+            // Show charging profile
+            document.getElementById('charging-profile').style.display = 'block';
+            document.getElementById('profile-placeholder').style.display = 'none';
+
+            // Create charging profile chart
+            createChargingProfile(brand, model, dailyDistance);
+
+            alert('Vehicle registered successfully!');
+        }
+
+        function createChargingProfile(brand, model, dailyDistance) {
+            const ctx = document.getElementById('charging-chart').getContext('2d');
+            const vehicleData = vehicleDatabase[brand][model];
+            const batteryCapacity = parseFloat(vehicleData.battery);
+            const range = parseInt(vehicleData.range);
+            
+            // Calculate daily energy consumption
+            const dailyConsumption = (dailyDistance / range) * batteryCapacity;
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Daily Usage', 'Buffer', 'Reserve'],
+                    datasets: [{
+                        data: [dailyConsumption, batteryCapacity * 0.2, batteryCapacity - dailyConsumption - (batteryCapacity * 0.2)],
+                        backgroundColor: ['#ff6b6b', '#4ecdc4', '#45b7d1']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Update charging details
+            document.getElementById('charging-details').innerHTML = `
+                <p><strong>Daily Energy Need:</strong> ${dailyConsumption.toFixed(1)} kWh</p>
+                <p><strong>AC Charging Time:</strong> ${(dailyConsumption / 7.4).toFixed(1)} hours</p>
+                <p><strong>DC Fast Charging:</strong> ${(dailyConsumption / 25).toFixed(1)} hours</p>
+                <p><strong>Weekly Charging Cost:</strong> ₹${(dailyConsumption * 7 * 6).toFixed(0)}</p>
+            `;
+        }
+
+        // Charger search and booking functions
+        function searchChargers() {
+            const searchTerm = document.getElementById('search-location').value.toLowerCase();
+            const chargerItems = document.querySelectorAll('.charger-item');
+            
+            chargerItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm) || searchTerm === '') {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function filterChargers() {
+            const chargerType = document.getElementById('charger-type').value;
+            const distance = document.getElementById('distance-range').value;
+            
+            // Filter logic would go here
+            console.log('Filtering by:', chargerType, distance);
+        }
+
+        function bookCharger(chargerId) {
+            document.getElementById('booking-modal').style.display = 'block';
+            
+            // Set default datetime to 1 hour from now
+            const now = new Date();
+            now.setHours(now.getHours() + 1);
+            document.getElementById('booking-datetime').value = now.toISOString().slice(0, -8);
+        }
+
+        function confirmBooking() {
+            alert('Booking confirmed! You will receive a confirmation SMS shortly.');
+            closeModal('booking-modal');
+            
+            // Start charging session simulation after 2 seconds
+            setTimeout(() => {
+                document.getElementById('charging-modal').style.display = 'block';
+                startChargingSimulation();
+            }, 2000);
+        }
+
+        function startChargingSimulation() {
+            batteryLevel = 45;
+            let cost = 45;
+            let energyDelivered = 8.5;
+            
+            chargingInterval = setInterval(() => {
+                batteryLevel += 0.5;
+                cost += 1.2;
+                energyDelivered += 0.12;
+                
+                document.getElementById('battery-level').textContent = Math.min(batteryLevel, 100).toFixed(0) + '%';
+                document.getElementById('charging-progress').style.width = Math.min(batteryLevel, 100) + '%';
+                document.getElementById('current-cost').textContent = cost.toFixed(0);
+                document.getElementById('energy-delivered').textContent = energyDelivered.toFixed(1) + ' kWh';
+                
+                const timeRemaining = Math.max(0, Math.floor((100 - batteryLevel) / 0.5 * 2));
+                document.getElementById('time-remaining').textContent = timeRemaining + ' min';
+                
+                if (batteryLevel >= 100) {
+                    clearInterval(chargingInterval);
+                    alert('Charging complete! Total cost: ₹' + cost.toFixed(0));
+                    closeModal('charging-modal');
+                }
+            }, 2000);
+        }
+
+        function stopCharging() {
+            clearInterval(chargingInterval);
+            alert('Charging session stopped. Final cost: ₹' + document.getElementById('current-cost').textContent);
+            closeModal('charging-modal');
+        }
+
+        // Host viability calculation
+        function calculateViability() {
+            document.getElementById('calc-loading').style.display = 'inline-block';
+            
+            setTimeout(() => {
+                document.getElementById('calc-loading').style.display = 'none';
+                document.getElementById('viability-result').style.display = 'block';
+                document.getElementById('viability-placeholder').style.display = 'none';
+                
+                // Create viability chart
+                const ctx = document.getElementById('viability-chart').getContext('2d');
+                const viabilityScore = 78;
+                
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [{
+                            data: [viabilityScore, 100 - viabilityScore],
+                            backgroundColor: ['#4CAF50', '#e0e0e0'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        cutout: '70%',
+                        responsive: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+                
+                // Add score text in center
+                ctx.fillStyle = '#4CAF50';
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(viabilityScore + '%', 100, 110);
+                
+                document.getElementById('viability-details').innerHTML = `
+                    <p><strong>Location Score:</strong> Excellent (78/100)</p>
+                    <p><strong>Traffic Density:</strong> High</p>
+                    <p><strong>Competition:</strong> Low</p>
+                    <p><strong>EV Adoption:</strong> Growing (22%)</p>
+                    <p><strong>Recommendation:</strong> Ideal for Premium tier investment</p>
+                `;
+                
+                updateInvestmentCalculation();
+            }, 3000);
+        }
+
+        function updateInvestmentCalculation() {
+            const budget = document.getElementById('investment-budget').value;
+            let investment, revenue, share, payback, roi;
+            
+            switch(budget) {
+                case 'basic':
+                    investment = '₹2-3 Lakhs';
+                    revenue = '₹25,000';
+                    share = '₹10,000';
+                    payback = '11 months';
+                    roi = '145%';
+                    break;
+                case 'premium':
+                    investment = '₹5-7 Lakhs';
+                    revenue = '₹45,000';
+                    share = '₹22,500';
+                    payback = '8 months';
+                    roi = '180%';
+                    break;
+                case 'hub':
+                    investment = '₹10+ Lakhs';
+                    revenue = '₹65,000';
+                    share = '₹39,000';
+                    payback = '6 months';
+                    roi = '243%';
+                    break;
+            }
+            
+            document.getElementById('investment-amount').textContent = investment;
+            document.getElementById('monthly-revenue').textContent = revenue;
+            document.getElementById('host-share').textContent = share;
+            document.getElementById('payback-period').textContent = payback;
+            document.getElementById('annual-roi').textContent = roi;
+        }
+
+        // Investment calculator functions
+        function initializeCalculator() {
+            updateCalculation();
+            createROIChart();
+        }
+
+        function updateCalculation() {
+            const investment = parseInt(document.getElementById('calc-investment').value);
+            const sessions = parseInt(document.getElementById('daily-sessions').value);
+            const revenuePerSession = parseInt(document.getElementById('revenue-per-session').value);
+            const sharePercent = parseInt(document.getElementById('revenue-share').value);
+            
+            document.getElementById('sessions-display').textContent = sessions + ' sessions/day';
+            document.getElementById('revenue-display').textContent = '₹' + revenuePerSession + '/session';
+            
+            const monthlyRevenue = sessions * revenuePerSession * 30;
+            const hostEarning = monthlyRevenue * (sharePercent / 100);
+            const paybackMonths = (investment / hostEarning).toFixed(1);
+            const annualROI = ((hostEarning * 12 / investment) * 100).toFixed(0);
+            const fiveYearProfit = (hostEarning * 60 - investment);
+            
+            document.getElementById('monthly-earning').textContent = '₹' + hostEarning.toLocaleString();
+            document.getElementById('payback-months').textContent = paybackMonths;
+            document.getElementById('calc-annual-roi').textContent = annualROI + '%';
+            document.getElementById('five-year-profit').textContent = '₹' + (fiveYearProfit / 100000).toFixed(1) + ' Lakhs';
+        }
+
+        function createROIChart() {
+            const ctx = document.getElementById('roi-chart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Month 1', 'Month 6', 'Month 12', 'Month 24', 'Month 36', 'Month 60'],
+                    datasets: [{
+                        label: 'Cumulative Profit',
+                        data: [-250000, 87500, 425000, 1100000, 1775000, 3125000],
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + (value / 100000).toFixed(1) + 'L';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Dashboard functions
+        function initializeDashboard() {
+            createRevenueChart();
+        }
+
+        function createRevenueChart() {
+            const ctx = document.getElementById('revenue-chart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Monthly Revenue',
+                        data: [28000, 32000, 35000, 41000, 38000, 45250],
+                        backgroundColor: 'rgba(76, 175, 80, 0.8)',
+                        borderColor: '#4CAF50',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + (value / 1000) + 'K';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function scheduleMaintenance() {
+            alert('Maintenance request submitted. Our technician will contact you within 24 hours.');
+        }
+
+        function downloadBusinessPlan() {
+            alert('Business plan PDF will be downloaded shortly.');
+        }
+
+        // Modal functions
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            if (chargingInterval) {
+                clearInterval(chargingInterval);
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                    if (chargingInterval) {
+                        clearInterval(chargingInterval);
+                    }
+                }
+            });
+        }
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.style.display = navLinks.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add some initial animations
+            setTimeout(() => {
+                document.querySelectorAll('.animate-fade-in').forEach((el, index) => {
+                    setTimeout(() => {
+                        el.style.opacity = '1';
+                        el.style.transform = 'translateY(0)';
+                    }, index * 200);
+                });
+            }, 500);
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var map = L.map('map').setView([51.505, -0.09], 13);
+
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            L.marker([51.5, -0.09]).addTo(map)
+                .bindPopup('A pretty CSS popup.<br> Easily customizable.')
+                .openPopup();})
+    </script>
+</body>
+</html>
